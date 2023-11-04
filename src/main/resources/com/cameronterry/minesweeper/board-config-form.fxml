@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox spacing="10" alignment="TOP_CENTER" xmlns:fx="http://javafx.com/fxml" fx:controller="com.cameronterry.minesweeper.BoardConfigController">
+    <GridPane hgap="10" vgap="10">
+        <Label text="Rows:"/>
+        <TextField fx:id="rowsField" GridPane.columnIndex="1"/>
+        <Label text="Columns:" GridPane.rowIndex="1"/>
+        <TextField fx:id="colsField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+        <Label text="Number of Mines:" GridPane.rowIndex="2"/>
+        <TextField fx:id="minesField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+    </GridPane>
+    <Button text="OK" onAction="#onOkClicked"/>
+</VBox>
+

@@ -1,0 +1,5 @@
+/* style.css */
+.VBox {
+    -fx-border-color: red;
+    -fx-border-width: 2;
+}
