@@ -84,13 +84,17 @@ public class MinesweeperController {
         numberColorMapping.put(8, Color.GRAY);
     }
 
+    private Button getCellButton(int row, int col) {
+        return (Button) minesweeperGrid.getChildren().get(row * minefieldBoard.getCols() + col);
+    }
+
     @FXML
     private void onConfigureBoard(ActionEvent event) {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("board-config-form.fxml"));
             VBox boardConfigBox = fxmlLoader.load();
 
-            // You'll need a secondary controller for handling BoardConfigForm.fxml
+            // Secondary controller for handling BoardConfigForm.fxml
             BoardConfigController configController = fxmlLoader.getController();
             configController.setInitialValues(boardRows, boardCols, boardMines);
 
@@ -105,7 +109,7 @@ public class MinesweeperController {
                 boardCols = Integer.parseInt(configController.getColsField().getText());
                 boardMines = Integer.parseInt(configController.getMinesField().getText());
 
-                 // Initialize your board here with the provided parameters
+                 // Initialize board with the provided parameters
                  minefieldBoard = new MinefieldBoard(boardRows, boardCols, boardMines);
                  minefieldBoard.updateCellCoverageCache();
 
@@ -118,7 +122,7 @@ public class MinesweeperController {
                     for (int r = 0; r < minefieldBoard.getRows(); r++) {
                         for (int c = 0; c < minefieldBoard.getCols(); c++) {
                             this.updateCell(r, c);
-                            Button cellButton = (Button) minesweeperGrid.getChildren().get(r * minefieldBoard.getCols() + c);
+                            Button cellButton = getCellButton(r, c);
                             cellButton.setStyle("-fx-text-fill: black; -fx-font-size: 20px;");
                             // clear images
                             cellButton.setGraphic(null);
@@ -172,7 +176,7 @@ public class MinesweeperController {
         for (int r = 0; r < minefieldBoard.getRows(); r++) {
             for (int c = 0; c < minefieldBoard.getCols(); c++) {
                 this.updateCell(r, c);
-                Button cellButton = (Button) minesweeperGrid.getChildren().get(r * minefieldBoard.getCols() + c);
+                Button cellButton = getCellButton(r, c);
                 cellButton.setStyle("-fx-text-fill: black; -fx-font-size: 20px;");
                 // clear images
                 cellButton.setGraphic(null);
@@ -276,7 +280,7 @@ public class MinesweeperController {
                 this.updateCell(r, c);
             }
         }
-        // You might want to call some method here to check for win/lose conditions.
+        // win/lose conditions
         if (hitMine || minefieldBoard.getLegalCells().isEmpty()) {
             stopTimer();
             if (hitMine) {
@@ -286,16 +290,19 @@ public class MinesweeperController {
                 setStatusLabel("/images/minesweeper_win.png");
             }
             // Load the image outside the loop
-            String mineImage = (hitMine) ? "/images/mine.png": "/images/flag.png";
+            String mineImage = (hitMine) ? "/images/mine.png" : "/images/flag.png";
             Button cellButton;
 
             for (Pair<Integer, Integer> mine : minefieldBoard.getMineCache()) {
                 int rMine = mine.getKey();
                 int cMine = mine.getValue();
-                minefieldBoard.getBoard()[rMine][cMine].setState(CellState.UNCOVERED);
 
-                int index = rMine * minefieldBoard.getCols() + cMine;
-                cellButton = (Button) minesweeperGrid.getChildren().get(index);
+                if (minefieldBoard.getBoard()[rMine][cMine].getState() == CellState.FLAGGED) {
+                    continue;
+                }
+
+                minefieldBoard.getBoard()[rMine][cMine].setState(CellState.UNCOVERED);
+                cellButton = getCellButton(rMine, cMine);
 
                 // Set the button graphic to the ImageView with the mine image
                 ImageView individualMineImageView = getImage(mineImage, (int) cellButton.getWidth(), (int) cellButton.getHeight());
@@ -308,8 +315,8 @@ public class MinesweeperController {
             minefieldBoard.updateCellCoverageCache();
             for (int r = 0; r < minefieldBoard.getRows(); r++) {
                 for (int c = 0; c < minefieldBoard.getCols(); c++) {
-                    cellButton = (Button) minesweeperGrid.getChildren().get(r * minefieldBoard.getCols() + c);
                     this.updateCell(r, c);
+                    cellButton = getCellButton(r, c);
                     cellButton.setDisable(true);
                 }
             }
@@ -335,7 +342,7 @@ public class MinesweeperController {
     private void updateCell(int row, int col) {
         // Here, update the button based on the state of the cell.
 
-        Button cellButton = (Button) minesweeperGrid.getChildren().get(row * minefieldBoard.getCols() + col);
+        Button cellButton = getCellButton(row, col);
         Cell cell = minefieldBoard.getBoard()[row][col];
 
         // Logic to update the button text and style based on the cell state
@@ -345,11 +352,7 @@ public class MinesweeperController {
             int rawCellValue = cell.getValue().getValue();
 
             if (cellValue == CellValue.EMPTY) {
-                Image emptyImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/empty.png")));
-                ImageView emptyImageView = new ImageView(emptyImage);
-                emptyImageView.setFitWidth(cellButton.getWidth());
-                emptyImageView.setFitHeight(cellButton.getHeight());
-                emptyImageView.setPreserveRatio(false);
+                ImageView emptyImageView = getImage("/images/empty.png", (int) cellButton.getWidth(), (int) cellButton.getHeight());
                 cellButton.setGraphic(emptyImageView);
                 cellButton.setPadding(Insets.EMPTY);
                 cellButton.setStyle("-fx-background-color: transparent;");
@@ -372,11 +375,7 @@ public class MinesweeperController {
             // set the cellButton back to normal
             cellButton.setStyle("-fx-text-fill: black; -fx-font-size: 20px;");
         } else if (minefieldBoard.getFlaggedCells().contains(new Pair<>(row, col))) {
-            Image flagImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/flag.png")));
-            ImageView flagImageView = new ImageView(flagImage);
-            flagImageView.setFitWidth(cellButton.getWidth());
-            flagImageView.setFitHeight(cellButton.getHeight());
-            flagImageView.setPreserveRatio(false);
+            ImageView flagImageView = getImage("/images/flag.png", (int) cellButton.getWidth(), (int) cellButton.getHeight());
             cellButton.setGraphic(flagImageView);
             cellButton.setPadding(Insets.EMPTY);
             cellButton.setStyle("-fx-background-color: transparent;");

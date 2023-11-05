@@ -6,10 +6,11 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.util.HashSet;
-import java.util.Random;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.*;
+
 import javafx.util.Pair;
-import java.util.Scanner;
 
 class MinefieldBoardTest {
     MinefieldBoard board;
@@ -174,5 +175,74 @@ class MinefieldBoardTest {
         // uncover the square
         board.uncover(firstZeroSquare.getKey(), firstZeroSquare.getValue());
         System.out.println(board.getBoardStateStr());
+    }
+
+    @Test
+    void calculateNeighborDistribution() {
+//        System.out.println("Rows: " + rows + ", Cols: " + cols + ", Mines: " + numMines);
+        HashMap<Integer, Integer> neighborCount = new HashMap<>();
+        HashMap<Integer, Integer> totalNeighborCount = new HashMap<>();
+        ArrayList<Integer[]> samples = new ArrayList<>();
+
+        for (int t = 0; t < 5000; t++) {
+            neighborCount.clear();
+            board = new MinefieldBoard(rows, cols, numMines);
+            board.generateSolution();
+            for (int r = 0; r < board.getRows(); r++) {
+                for (int c = 0; c < board.getCols(); c++) {
+                    int boardRawCellValue = board.getBoard()[r][c].getValue().getValue();
+                    if (boardRawCellValue != -1) {
+                        if (neighborCount.containsKey(boardRawCellValue)) {
+                            neighborCount.put(boardRawCellValue, neighborCount.get(boardRawCellValue) + 1);
+                        } else {
+                            neighborCount.put(boardRawCellValue, 1);
+                        }
+
+                        if (totalNeighborCount.containsKey(boardRawCellValue)) {
+                            totalNeighborCount.put(boardRawCellValue, totalNeighborCount.get(boardRawCellValue) + 1);
+                        } else {
+                            totalNeighborCount.put(boardRawCellValue, 1);
+                        }
+                    }
+                }
+            }
+
+            // save as array with entries rows,cols,mines,0,1,2,3,4,5,6,7,8
+            int[] neighborCountArray = new int[12];
+            neighborCountArray[0] = rows;
+            neighborCountArray[1] = cols;
+            neighborCountArray[2] = numMines;
+            for (int i = 0; i < 9; i++) {
+                if (neighborCount.containsKey(i)) {
+                    neighborCountArray[i + 3] = neighborCount.get(i);
+                } else {
+                    neighborCountArray[i + 3] = 0;
+                }
+            }
+
+            Integer[] neighborCountArrayInteger = new Integer[neighborCountArray.length];
+            for (int i = 0; i < neighborCountArray.length; i++) {
+                neighborCountArrayInteger[i] = neighborCountArray[i];
+            }
+
+            samples.add(neighborCountArrayInteger);
+        }
+        for (Map.Entry<Integer, Integer> entry : totalNeighborCount.entrySet()) {
+            System.out.println(entry.getKey() + ": " + entry.getValue());
+        }
+
+        // save samples to csv file
+        String csv = "rows,cols,mines,0,1,2,3,4,5,6,7,8\n";
+        for (Integer[] sample : samples) {
+            for (int i = 0; i < sample.length; i++) {
+                csv += sample[i];
+                if (i < sample.length - 1) {
+                    csv += ",";
+                }
+            }
+            csv += "\n";
+        }
+
+        System.out.println(csv);
     }
 }
