@@ -5,8 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="908755b6-fc93-402a-8b52-913b711f330d" name="Changes" comment="Improve previous game UI">
+      <change afterPath="$PROJECT_DIR$/CMinesweeper-1.0.dmg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/minesweeperLogo.icns" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/com/cameronterry/minesweeper/minesweeper-view.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/com/cameronterry/minesweeper/minesweeper-view.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -52,7 +54,7 @@
     &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
     &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
     &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
+    &quot;settings.editor.selected.configurable&quot;: &quot;MavenSettings&quot;
   }
 }</component>
   <component name="RecentsManager">
@@ -194,7 +196,39 @@
       <option name="project" value="LOCAL" />
       <updated>1699252175189</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Improve previous game UI">
+      <option name="closed" value="true" />
+      <created>1699252479428</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1699252479428</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Improve previous game UI">
+      <option name="closed" value="true" />
+      <created>1699252539218</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1699252539218</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Improve previous game UI">
+      <option name="closed" value="true" />
+      <created>1699298729089</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1699298729089</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Improve previous game UI">
+      <option name="closed" value="true" />
+      <created>1699298852325</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1699298852325</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -212,6 +246,7 @@
     <MESSAGE value="Initial commit" />
     <MESSAGE value="Add README.md, slight refactor" />
     <MESSAGE value="Add basic logging functionality" />
+    <MESSAGE value="Update README.md" />
     <MESSAGE value="Improve previous game UI" />
     <option name="LAST_COMMIT_MESSAGE" value="Improve previous game UI" />
   </component>

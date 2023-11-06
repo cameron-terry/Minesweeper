@@ -262,6 +262,23 @@ class MinefieldBoardTest {
         System.out.println(gameJSON);
         int[] boardSize = (int[]) logger.getGameData().get("boardSize");
         System.out.println("Board size: " + boardSize[0] + "x" + boardSize[1]);
+
+        // test cell caches as arrays
+        int[][] uncoveredCells = (int[][]) logger.getGameData().get("uncoveredCells");
+        int[][] flaggedCells = (int[][]) logger.getGameData().get("flaggedCells");
+
+        int numUncoveredCells = 0, numFlaggedCells = 0;
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                if (uncoveredCells[r][c] == 1) {
+                    numUncoveredCells++;
+                } else if (flaggedCells[r][c] == 1) {
+                    numFlaggedCells++;
+                }
+            }
+        }
+        assertEquals(numUncoveredCells, board.getUncoveredCells().size());
+        assertEquals(numFlaggedCells, board.getFlaggedCells().size());
     }
 
     @Test

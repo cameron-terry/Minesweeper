@@ -8,8 +8,12 @@
     <!-- Menu Bar -->
     <MenuBar>
         <Menu text="File">
-            <!-- Save game menu item -->
-            <!--<MenuItem fx:id="saveGameMenuItem" onAction="#onSaveGame" text="Save"/>-->
+            <!-- Save game menu item - in progress -->
+            <!-- <MenuItem fx:id="saveGameMenuItem" onAction="#onSaveGame" text="Save"/>-->
+
+            <!-- Load game menu item - in progress -->
+            <!-- <MenuItem fx:id="LoadGameMenuItem" onAction="#onLoadGame" text="Load"/> -->
+
             <!-- Recent games menu item -->
             <MenuItem text="Recent" onAction="#onShowRecentFinishedGames" fx:id="recentGamesMenu">
                 <!-- Sub-menu items for Recent will be added here -->

@@ -396,12 +396,42 @@ class MinefieldBoard {
         return uncoveredCells;
     }
 
+    public int[][] getUncoveredCellsAsArray() {
+        int[][] uncoveredCellsArray = new int[this.rows][this.cols];
+        for (int r = 0; r < this.rows; r++) {
+            for (int c = 0; c < this.cols; c++) {
+                uncoveredCellsArray[r][c] = (this.uncoveredCells.contains(new Pair<>(r, c)) ? 1 : 0);
+            }
+        }
+        return uncoveredCellsArray;
+    }
+
     public HashSet<Pair<Integer, Integer>> getCoveredCells() {
         return coveredCells;
     }
 
+    public int[][] getCoveredCellsAsArray() {
+        int[][] coveredCellsArray = new int[this.rows][this.cols];
+        for (int r = 0; r < this.rows; r++) {
+            for (int c = 0; c < this.cols; c++) {
+                coveredCellsArray[r][c] = (this.coveredCells.contains(new Pair<>(r, c)) ? 1 : 0);
+            }
+        }
+        return coveredCellsArray;
+    }
+
     public HashSet<Pair<Integer, Integer>> getFlaggedCells() {
         return flaggedCells;
+    }
+
+    public int[][] getFlaggedCellsAsArray() {
+        int[][] flaggedCellsArray = new int[this.rows][this.cols];
+        for (int r = 0; r < this.rows; r++) {
+            for (int c = 0; c < this.cols; c++) {
+                flaggedCellsArray[r][c] = (this.flaggedCells.contains(new Pair<>(r, c)) ? 1 : 0);
+            }
+        }
+        return flaggedCellsArray;
     }
 
     public HashSet<Pair<Integer, Integer>> getMineCache() {

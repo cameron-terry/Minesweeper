@@ -332,6 +332,11 @@ public class MinesweeperController {
         MinesweeperLogging.saveGameToFile(gameState, "unfinished_games.json");
     }
 
+    @FXML
+    private void onLoadGame(ActionEvent event) {
+
+    }
+
     private String formatTime(int secondsPassed) {
         // Format the seconds into hours, minutes, and seconds
         int hours = secondsPassed / 3600;

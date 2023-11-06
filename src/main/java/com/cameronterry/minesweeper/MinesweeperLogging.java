@@ -17,12 +17,17 @@ class GameRecord {
     private final int cols;
     private final int numMines;
     private final int[][] boardState;
+
+    private final int[][] uncoveredCells;
+    private final int[][] flaggedCells;
     private final int highestNumber;
     private final int finalTime;
     private final LocalDateTime dateTime;
 
     // constructor that accepts a Map
     public GameRecord(Map<String, Object> gameData) {
+        int[][] flaggedCells1;
+        int[][] uncoveredCells1;
         // The boardSize key in JSON corresponds to rows, cols, and numMines
         List<Double> boardSize = (List<Double>) gameData.get("boardSize");
         this.rows = boardSize.get(0).intValue();
@@ -35,12 +40,34 @@ class GameRecord {
 
         // Deserialize the finalBoardState properly as a 2D array of integers
         List<List<Double>> boardStateList = (List<List<Double>>) gameData.get("finalBoardState");
+
         this.boardState = new int[boardStateList.size()][boardStateList.get(0).size()];
         for (int i = 0; i < boardStateList.size(); i++) {
             for (int j = 0; j < boardStateList.get(i).size(); j++) {
                 this.boardState[i][j] = boardStateList.get(i).get(j).intValue();
             }
         }
+
+        try {
+            List<List<Double>> uncoveredCellsList = (List<List<Double>>) gameData.get("uncoveredCells");
+            List<List<Double>> flaggedCellsList = (List<List<Double>>) gameData.get("flaggedCells");
+
+            uncoveredCells1 = new int[uncoveredCellsList.size()][uncoveredCellsList.get(0).size()];
+            flaggedCells1 = new int[flaggedCellsList.size()][flaggedCellsList.get(0).size()];
+
+            for (int i = 0; i < boardStateList.size(); i++) {
+                for (int j = 0; j < boardStateList.get(i).size(); j++) {
+                    uncoveredCells1[i][j] = uncoveredCellsList.get(i).get(j).intValue();
+                    flaggedCells1[i][j] = flaggedCellsList.get(i).get(j).intValue();
+                }
+            }
+        } catch (NullPointerException e) {
+            uncoveredCells1 = null;
+            flaggedCells1 = null;
+        }
+
+        this.flaggedCells = flaggedCells1;
+        this.uncoveredCells = uncoveredCells1;
     }
     public int getRows() {
         return rows;
@@ -120,9 +147,14 @@ public class MinesweeperLogging {
             }
         }
 
+        int[][] uncoveredCells = minefieldBoard.getUncoveredCellsAsArray();
+        int[][] flaggedCells = minefieldBoard.getFlaggedCellsAsArray();
+
         // Create a map or a POJO class to hold your game data
         gameData = new HashMap<>();
         gameData.put("boardSize", boardInfo);
+        gameData.put("uncoveredCells", uncoveredCells);
+        gameData.put("flaggedCells", flaggedCells);
         gameData.put("finalBoardState", boardState);
         gameData.put("highestNumber", minefieldBoard.getHighestNeighbor());
         gameData.put("finalTime", finalTime);
