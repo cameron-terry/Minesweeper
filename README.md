@@ -1,6 +1,5 @@
 # Minesweeper
-![Minesweeper Screenshot](./src/main/resources/images/minesweeperJava15x15x40_2.png)
-
+![Minesweeper Screenshot](./src/main/resources/images/minesweeper6star15x15.png)
 ## A simple Minesweeper game written in Java
 
 ## How to run

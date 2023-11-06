@@ -11,8 +11,10 @@ import java.io.IOException;
 import java.util.*;
 
 import javafx.util.Pair;
+import java.time.LocalDateTime;
 
 class MinefieldBoardTest {
+    MinesweeperLogging logger;
     MinefieldBoard board;
     int rows, cols, numMines;
     Random rand;
@@ -245,4 +247,31 @@ class MinefieldBoardTest {
 
         System.out.println(csv);
     }
+
+    @Test
+    void getHighestNeighbor() {
+        System.out.println(board.getOracleStateStr());
+        System.out.println("Highest neighbor: " + board.getHighestNeighbor());
+    }
+
+    @Test
+    void testSaveFunctionality() {
+        board = new MinefieldBoard(rows, cols, numMines);
+        MinesweeperLogging logger = new MinesweeperLogging();
+        String gameJSON = logger.saveGame(board, 0, LocalDateTime.now());
+        System.out.println(gameJSON);
+        int[] boardSize = (int[]) logger.getGameData().get("boardSize");
+        System.out.println("Board size: " + boardSize[0] + "x" + boardSize[1]);
+    }
+
+    @Test
+    void testLoadGameObjects() {
+        List<GameRecord> recordList = MinesweeperGameLoader.loadGamesFromFile("finished_games.json");
+        for (GameRecord record : recordList) {
+            System.out.println("Board size: " + record.getRows() + "x" + record.getCols());
+            System.out.println("Number of mines: " + record.getNumMines());
+            System.out.println("Final time: " + record.getFinalTime());
+        }
+    }
+
 }

@@ -8,7 +8,12 @@
     <!-- Menu Bar -->
     <MenuBar>
         <Menu text="File">
-            <!-- Menu items for File will go here -->
+            <!-- Save game menu item -->
+            <MenuItem fx:id="saveGameMenuItem" onAction="#onSaveGame" text="Save"/>
+            <!-- Recent games menu item -->
+            <MenuItem text="Recent" onAction="#onShowRecentFinishedGames" fx:id="recentGamesMenu">
+                <!-- Sub-menu items for Recent will be added here -->
+            </MenuItem>
         </Menu>
         <Menu text="Board">
             <MenuItem fx:id="configureBoardMenuItem" onAction="#onConfigureBoard" text="Configure Board..."/>
@@ -19,8 +24,21 @@
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
     </padding>
 
-    <!-- Welcome text label -->
-    <Label fx:id="statusLabel" text="Welcome to Minesweeper!" />
+    <!-- Horizontal box for status label and stars -->
+    <HBox alignment="CENTER" spacing="10.0">
+        <!-- Box for stars on the left -->
+        <HBox fx:id="leftStarsBox" spacing="5.0">
+            <!-- Left stars will be added here dynamically -->
+        </HBox>
+
+        <!-- Status label -->
+        <Label fx:id="statusLabel" text="Welcome to Minesweeper!" />
+
+        <!-- Box for stars on the right -->
+        <HBox fx:id="rightStarsBox" spacing="5.0">
+            <!-- Right stars will be added here dynamically -->
+        </HBox>
+    </HBox>
 
     <!-- Horizontal box for mines label, button, and time label -->
     <HBox alignment="CENTER" spacing="10.0">
@@ -43,7 +61,4 @@
             <!-- Row constraints will be set dynamically in the controller -->
         </rowConstraints>
     </GridPane>
-
-
 </VBox>
-

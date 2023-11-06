@@ -1,17 +1,23 @@
 package com.cameronterry.minesweeper;
 
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.*;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Polygon;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Pair;
@@ -23,7 +29,11 @@ import javafx.util.Duration;
 import javafx.scene.paint.Color;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 
 public class MinesweeperController {
@@ -42,6 +52,12 @@ public class MinesweeperController {
     @FXML
     private GridPane minesweeperGrid;
 
+    @FXML
+    private HBox leftStarsBox;
+
+    @FXML
+    private HBox rightStarsBox;
+
     private boolean timerOn = false;
 
     private IntegerProperty secondsPassed = new SimpleIntegerProperty(0);
@@ -49,9 +65,38 @@ public class MinesweeperController {
 
     private MinefieldBoard minefieldBoard;
 
-    private HashMap<String, String> asciiMapping;
+    private final HashMap<String, String> asciiMapping = new HashMap<>();
+
+    {
+        asciiMapping.put("-1", "");
+        for (int i = 0; i < 9; i++) {
+            asciiMapping.put(Integer.toString(i), Integer.toString(i));
+        }
+    }
 
     private int boardRows = 9, boardCols = 9, boardMines = 10;
+
+    private final MinesweeperLogging logger = new MinesweeperLogging();
+
+    public Polygon createStar(double centerX, double centerY, double innerRadius, double outerRadius, int numRays, Color fillColor) {
+        Polygon star = new Polygon();
+        double deltaAngle = Math.PI / numRays;
+
+        for (int i = 0; i < numRays * 2; i++) {
+            double radius = (i % 2 == 0) ? outerRadius : innerRadius;
+            double angle = i * deltaAngle;
+            double x = centerX + radius * Math.sin(angle);
+            double y = centerY - radius * Math.cos(angle);
+            star.getPoints().addAll(x, y);
+        }
+
+        star.setFill(fillColor);
+        // border for the star
+         star.setStroke(Color.BLACK); // Color of the star's border
+         star.setStrokeWidth(1); // Width of the star's border
+
+        return star;
+    }
 
     private ImageView getImage(String imagePath, int width, int height) {
         Image minesweeperImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream(imagePath)));
@@ -71,7 +116,7 @@ public class MinesweeperController {
         statusLabel.setText("");
     }
 
-    private HashMap<Integer, Color> numberColorMapping = new HashMap<>();
+    private final HashMap<Integer, Color> numberColorMapping = new HashMap<>();
 
     {
         numberColorMapping.put(1, Color.BLUE);
@@ -82,136 +127,6 @@ public class MinesweeperController {
         numberColorMapping.put(6, Color.DARKCYAN);
         numberColorMapping.put(7, Color.BLACK);
         numberColorMapping.put(8, Color.GRAY);
-    }
-
-    private Button getCellButton(int row, int col) {
-        return (Button) minesweeperGrid.getChildren().get(row * minefieldBoard.getCols() + col);
-    }
-
-    @FXML
-    private void onConfigureBoard(ActionEvent event) {
-        try {
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("board-config-form.fxml"));
-            VBox boardConfigBox = fxmlLoader.load();
-
-            // Secondary controller for handling BoardConfigForm.fxml
-            BoardConfigController configController = fxmlLoader.getController();
-            configController.setInitialValues(boardRows, boardCols, boardMines);
-
-            Stage popupStage = new Stage();
-            popupStage.initModality(Modality.APPLICATION_MODAL);
-            popupStage.setTitle("Configure Board");
-            popupStage.setScene(new Scene(boardConfigBox));
-
-            // Set the action for when the OK button is clicked
-            configController.setOkAction(() -> {
-                boardRows = Integer.parseInt(configController.getRowsField().getText());
-                boardCols = Integer.parseInt(configController.getColsField().getText());
-                boardMines = Integer.parseInt(configController.getMinesField().getText());
-
-                 // Initialize board with the provided parameters
-                 minefieldBoard = new MinefieldBoard(boardRows, boardCols, boardMines);
-                 minefieldBoard.updateCellCoverageCache();
-
-                 // reset the grid with the new board
-                    minesweeperGrid.getChildren().clear();
-                    minesweeperGrid.getRowConstraints().clear();
-                    minesweeperGrid.getColumnConstraints().clear();
-                    populateGrid();
-
-                    for (int r = 0; r < minefieldBoard.getRows(); r++) {
-                        for (int c = 0; c < minefieldBoard.getCols(); c++) {
-                            this.updateCell(r, c);
-                            Button cellButton = getCellButton(r, c);
-                            cellButton.setStyle("-fx-text-fill: black; -fx-font-size: 20px;");
-                            // clear images
-                            cellButton.setGraphic(null);
-
-                        }
-                    }
-
-                    // Reset timer to 0
-                    secondsPassed.set(0);
-
-                    // Bind the timerLabel text property to the secondsPassed property with a custom string format
-                    timerLabel.textProperty().bind(Bindings.createStringBinding(() ->
-                            "Time: " + formatTime(secondsPassed.get()), secondsPassed));
-
-                popupStage.close();
-            });
-
-            this.stopTimer();
-            this.setStatusLabel("/images/minesweeper_default.png");
-
-            popupStage.showAndWait();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-
-    private String formatTime(int secondsPassed) {
-        // Format the seconds into hours, minutes, and seconds
-        int hours = secondsPassed / 3600;
-        int minutes = (secondsPassed % 3600) / 60;
-        int seconds = secondsPassed % 60;
-        return (hours > 0 ? String.format("%02d:%02d:%02d", hours, minutes, seconds) : String.format("%02d:%02d", minutes, seconds));
-    }
-
-    public void stopTimer() {
-        if (timeline != null) {
-            timeline.stop();
-            timerOn = false;
-            timerLabel.textProperty().unbind(); // Unbind the property
-            timerLabel.setText("Time: " + formatTime(secondsPassed.get())); // Update one last time manually
-        }
-    }
-
-    @FXML
-    protected void onMinesweeperButtonClick() {
-        this.setStatusLabel("/images/minesweeper_default.png");
-
-        minefieldBoard = new MinefieldBoard(boardRows, boardCols, boardMines);
-        minefieldBoard.updateCellCoverageCache();
-        for (int r = 0; r < minefieldBoard.getRows(); r++) {
-            for (int c = 0; c < minefieldBoard.getCols(); c++) {
-                this.updateCell(r, c);
-                Button cellButton = getCellButton(r, c);
-                cellButton.setStyle("-fx-text-fill: black; -fx-font-size: 20px;");
-                // clear images
-                cellButton.setGraphic(null);
-
-            }
-        }
-        // Reset timer to 0
-        secondsPassed.set(0);
-
-        // Bind the timerLabel text property to the secondsPassed property with a custom string format
-        timerLabel.textProperty().bind(Bindings.createStringBinding(() ->
-                "Time: " + formatTime(secondsPassed.get()), secondsPassed));
-
-    }
-
-    public void initialize() {
-        this.setStatusLabel("/images/minesweeper_default.png");
-
-        // Initialize the MinefieldBoard with 9 rows, 9 columns, and 10 mines.
-        minefieldBoard = new MinefieldBoard(9, 9, 10);
-        asciiMapping = new HashMap<>();
-        asciiMapping.put("-1", "");
-        asciiMapping.put("0", " ");
-        for (int i = 1; i < 9; i++) {
-            asciiMapping.put(Integer.toString(i), Integer.toString(i));
-        }
-
-        // Populate the GridPane with buttons
-        populateGrid();
-
-        // Reset timer to 0
-        secondsPassed.set(0);
-        // Bind the timerLabel text property to the secondsPassed property
-        timerLabel.textProperty().bind(Bindings.createStringBinding(() ->
-                "Time: " + formatTime(secondsPassed.get()), secondsPassed));
     }
 
     private void populateGrid() {
@@ -263,6 +178,302 @@ public class MinesweeperController {
         VBox.setVgrow(minesweeperGrid, Priority.ALWAYS);
     }
 
+    private Button getCellButton(int row, int col) {
+        return (Button) minesweeperGrid.getChildren().get(row * minefieldBoard.getCols() + col);
+    }
+
+    @FXML
+    private void onConfigureBoard(ActionEvent event) {
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("board-config-form.fxml"));
+            VBox boardConfigBox = fxmlLoader.load();
+
+            // Secondary controller for handling BoardConfigForm.fxml
+            BoardConfigController configController = fxmlLoader.getController();
+            configController.setInitialValues(boardRows, boardCols, boardMines);
+
+            Stage popupStage = new Stage();
+            popupStage.initModality(Modality.APPLICATION_MODAL);
+            popupStage.setTitle("Configure Board");
+            popupStage.setScene(new Scene(boardConfigBox));
+
+            // Set the action for when the OK button is clicked
+            configController.setOkAction(() -> {
+                leftStarsBox.getChildren().clear();
+                rightStarsBox.getChildren().clear();
+
+                boardRows = Integer.parseInt(configController.getRowsField().getText());
+                boardCols = Integer.parseInt(configController.getColsField().getText());
+                boardMines = Integer.parseInt(configController.getMinesField().getText());
+
+                 // Initialize board with the provided parameters
+                 minefieldBoard = new MinefieldBoard(boardRows, boardCols, boardMines);
+                 minefieldBoard.updateCellCoverageCache();
+
+                 // reset the grid with the new board
+                    minesweeperGrid.getChildren().clear();
+                    minesweeperGrid.getRowConstraints().clear();
+                    minesweeperGrid.getColumnConstraints().clear();
+                    populateGrid();
+
+                    for (int r = 0; r < minefieldBoard.getRows(); r++) {
+                        for (int c = 0; c < minefieldBoard.getCols(); c++) {
+                            this.updateCell(r, c);
+                            Button cellButton = getCellButton(r, c);
+                            cellButton.setStyle("-fx-text-fill: black; -fx-font-size: 20px;");
+                            // clear images
+                            cellButton.setGraphic(null);
+
+                        }
+                    }
+
+                    // Reset timer to 0
+                    secondsPassed.set(0);
+
+                    // Bind the timerLabel text property to the secondsPassed property with a custom string format
+                    timerLabel.textProperty().bind(Bindings.createStringBinding(() ->
+                            "Time: " + formatTime(secondsPassed.get()), secondsPassed));
+
+                popupStage.close();
+            });
+
+            this.stopTimer();
+            this.setStatusLabel("/images/minesweeper_default.png");
+
+            popupStage.showAndWait();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void loadFinishedGame(GameRecord record) {
+        leftStarsBox.getChildren().clear();
+        rightStarsBox.getChildren().clear();
+        setStatusLabel("/images/minesweeper_win.png");
+        displayWinStars(record.getHighestNumber());
+
+        boardRows = record.getRows();
+        boardCols = record.getCols();
+        boardMines = record.getNumMines();
+        minefieldBoard = new MinefieldBoard(boardRows, boardCols, boardMines);
+        for (int r = 0; r < minefieldBoard.getRows(); r++) {
+            for (int c = 0; c < minefieldBoard.getCols(); c++) {
+                int rawCellValue = record.getBoardState()[r][c];
+                if (rawCellValue == -1) {
+                    minefieldBoard.getBoard()[r][c].setCell(CellState.FLAGGED, CellValue.MINE);
+                } else {
+                    CellValue recordCellValue = CellValue.values()[record.getBoardState()[r][c] + 1];
+                    minefieldBoard.getBoard()[r][c].setCell(CellState.UNCOVERED, recordCellValue);
+                }
+            }
+        }
+        minefieldBoard.updateCellCoverageCache();
+
+        // reset the grid with the new board
+        minesweeperGrid.getChildren().clear();
+        minesweeperGrid.getRowConstraints().clear();
+        minesweeperGrid.getColumnConstraints().clear();
+        populateGrid();
+
+        for (int r = 0; r < boardRows; r++) {
+            for (int c = 0; c < boardCols; c++) {
+                this.updateCell(r, c);
+                Button cellButton = getCellButton(r, c);
+                cellButton.setStyle("-fx-font-size: 20px;");
+                // clear images
+                cellButton.setGraphic(null);
+                cellButton.setDisable(true);
+
+                // set the color of the number
+                int rawCellValue = record.getBoardState()[r][c];
+                if (rawCellValue > 0) {
+                    Color textColor = numberColorMapping.getOrDefault(rawCellValue, Color.BLACK);
+                    String colorStyle = String.format("-fx-text-fill: #%02X%02X%02X; -fx-font-size: 20px;",
+                            (int) (textColor.getRed() * 255),
+                            (int) (textColor.getGreen() * 255),
+                            (int) (textColor.getBlue() * 255));
+
+                    cellButton.setStyle(colorStyle);
+                } else if (rawCellValue == -1) {
+                    // make the button red
+                    cellButton.setStyle("-fx-background-color: red; -fx-font-size: 20px;");
+                } else {
+                    cellButton.setStyle("-fx-backgound-color: black; -fx-font-size: 20px;");
+                }
+            }
+        }
+
+
+        // Reset timer to 0
+        secondsPassed = new SimpleIntegerProperty(record.getFinalTime());
+
+        // Bind the timerLabel text property to the secondsPassed property with a custom string format
+        timerLabel.textProperty().bind(Bindings.createStringBinding(() ->
+                "Time: " + formatTime(secondsPassed.get()), secondsPassed));
+
+        this.minesLabel.setText("Mines: " + minefieldBoard.getNumMines());
+    }
+
+    @FXML
+    private void onSaveGame(ActionEvent event) {
+        String gameState = logger.saveGame(minefieldBoard, secondsPassed.get(), LocalDateTime.now());
+        MinesweeperLogging.saveGameToFile(gameState, "unfinished_games.json");
+    }
+
+    private String formatTime(int secondsPassed) {
+        // Format the seconds into hours, minutes, and seconds
+        int hours = secondsPassed / 3600;
+        int minutes = (secondsPassed % 3600) / 60;
+        int seconds = secondsPassed % 60;
+        return (hours > 0 ? String.format("%02d:%02d:%02d", hours, minutes, seconds) : String.format("%02d:%02d", minutes, seconds));
+    }
+
+    public void stopTimer() {
+        if (timeline != null) {
+            timeline.stop();
+            timerOn = false;
+            timerLabel.textProperty().unbind(); // Unbind the property
+            timerLabel.setText("Time: " + formatTime(secondsPassed.get())); // Update one last time manually
+        }
+    }
+
+    @FXML
+    protected void onMinesweeperButtonClick() {
+        leftStarsBox.getChildren().clear();
+        rightStarsBox.getChildren().clear();
+        setStatusLabel("/images/minesweeper_default.png");
+
+        minefieldBoard = new MinefieldBoard(boardRows, boardCols, boardMines);
+        minefieldBoard.updateCellCoverageCache();
+        for (int r = 0; r < minefieldBoard.getRows(); r++) {
+            for (int c = 0; c < minefieldBoard.getCols(); c++) {
+                updateCell(r, c);
+                Button cellButton = getCellButton(r, c);
+                cellButton.setStyle("-fx-text-fill: black; -fx-font-size: 20px;");
+                // clear images
+                cellButton.setGraphic(null);
+
+            }
+        }
+        // Reset timer to 0
+        secondsPassed.set(0);
+
+        // Bind the timerLabel text property to the secondsPassed property with a custom string format
+        timerLabel.textProperty().bind(Bindings.createStringBinding(() ->
+                "Time: " + formatTime(secondsPassed.get()), secondsPassed));
+
+    }
+
+
+    @FXML
+    private void onShowRecentFinishedGames() {
+        Stage recentGamesStage = new Stage();
+        recentGamesStage.setTitle("Recent Games");
+
+        // Create a TableView for the game records
+        TableView<GameRecord> tableView = new TableView<>();
+
+        // Define the game info column
+        TableColumn<GameRecord, GameRecord> gameInfoColumn = new TableColumn<>("Game Information");
+        gameInfoColumn.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue()));
+
+        gameInfoColumn.setCellFactory(column -> new TableCell<GameRecord, GameRecord>() {
+            @Override
+            protected void updateItem(GameRecord item, boolean empty) {
+                super.updateItem(item, empty);
+                if (item == null || empty) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    Circle colorCircle = new Circle(5, numberColorMapping.getOrDefault(item.getHighestNumber(), Color.BLACK));
+                    String gameInfo = String.format("(%d, %d) → %d | %s",
+                            item.getRows(), item.getCols(), item.getNumMines(),
+                            formatSecondsAsMMSS(item.getFinalTime()));
+                    Text gameInfoText = new Text(gameInfo);
+
+                    // Create a HBox to hold the circle and the text
+                    HBox hbox = new HBox(colorCircle, gameInfoText);
+                    hbox.setSpacing(10); // Set spacing between circle and text
+                    hbox.setAlignment(Pos.CENTER_LEFT); // Align contents to the left
+
+                    // Set the graphic of the cell to our HBox
+                    setGraphic(hbox);
+                }
+            }
+        });
+
+        // Define the date column
+        TableColumn<GameRecord, String> dateColumn = new TableColumn<>("Date");
+        dateColumn.setCellValueFactory(cellData -> {
+            GameRecord record = cellData.getValue();
+            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss");
+            return new SimpleStringProperty(record.getDateTime().format(dateTimeFormatter));
+        });
+
+        // Add columns to the TableView
+        tableView.getColumns().add(gameInfoColumn);
+        tableView.getColumns().add(dateColumn);
+
+        // Populate the TableView with game records
+        List<GameRecord> previousGames = MinesweeperGameLoader.loadGamesFromFile("finished_games.json");
+        Collections.reverse(previousGames); // Assuming you want to reverse the list order
+        tableView.getItems().setAll(previousGames);
+
+        // Event listener for selection
+        tableView.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection != null) {
+                loadFinishedGame(newSelection);
+            }
+        });
+
+        // Create the scene and show the stage
+        Scene scene = new Scene(new ScrollPane(tableView), 400, 400); // You might want to adjust the size
+        recentGamesStage.setScene(scene);
+        recentGamesStage.show();
+    }
+
+    private String formatSecondsAsMMSS(int totalSecs) {
+        int minutes = totalSecs / 60;
+        int seconds = totalSecs % 60;
+        return String.format("%02d:%02d", minutes, seconds);
+    }
+
+    public void initialize() {
+        leftStarsBox.getChildren().clear();
+        rightStarsBox.getChildren().clear();
+        this.setStatusLabel("/images/minesweeper_default.png");
+
+        // Initialize the MinefieldBoard with 9 rows, 9 columns, and 10 mines.
+        minefieldBoard = new MinefieldBoard(9, 9, 10);
+
+        // Populate the GridPane with buttons
+        populateGrid();
+
+        // Reset timer to 0
+        secondsPassed.set(0);
+        // Bind the timerLabel text property to the secondsPassed property
+        timerLabel.textProperty().bind(Bindings.createStringBinding(() ->
+                "Time: " + formatTime(secondsPassed.get()), secondsPassed));
+    }
+
+    public void displayWinStars(int numberOfStars) {
+        leftStarsBox.getChildren().clear();
+        rightStarsBox.getChildren().clear();
+
+        int starsRight = numberOfStars / 2;
+        int starsLeft = numberOfStars - starsRight;
+
+        for (int i = 0; i < starsLeft; i++) {
+            Polygon leftStar = createStar(0, 0, 10, 20, 5, numberColorMapping.getOrDefault(numberOfStars, Color.GOLD));
+            leftStarsBox.getChildren().add(leftStar);
+        }
+
+        for (int i = 0; i < starsRight; i++) {
+            Polygon rightStar = createStar(0, 0, 10, 20, 5, numberColorMapping.getOrDefault(numberOfStars, Color.GOLD));
+            rightStarsBox.getChildren().add(rightStar);
+        }
+    }
+
 
     private void handleCellClick(int row, int col) {
         if (!timerOn) {
@@ -280,6 +491,7 @@ public class MinesweeperController {
                 this.updateCell(r, c);
             }
         }
+
         // win/lose conditions
         if (hitMine || minefieldBoard.getLegalCells().isEmpty()) {
             stopTimer();
@@ -288,6 +500,10 @@ public class MinesweeperController {
             }
             else {
                 setStatusLabel("/images/minesweeper_win.png");
+
+                int starsToDisplay = minefieldBoard.getHighestNeighbor();
+                displayWinStars(starsToDisplay);
+                saveFinishedGameResult();
             }
             // Load the image outside the loop
             String mineImage = (hitMine) ? "/images/mine.png" : "/images/flag.png";
@@ -339,6 +555,11 @@ public class MinesweeperController {
         }
     }
 
+    private void saveFinishedGameResult() {
+        String gameJSON = logger.saveGame(minefieldBoard, secondsPassed.get(), LocalDateTime.now());
+        MinesweeperLogging.saveGameToFile(gameJSON, "finished_games.json");
+    }
+
     private void updateCell(int row, int col) {
         // Here, update the button based on the state of the cell.
 
@@ -346,7 +567,6 @@ public class MinesweeperController {
         Cell cell = minefieldBoard.getBoard()[row][col];
 
         // Logic to update the button text and style based on the cell state
-        // For example:
         if (minefieldBoard.getUncoveredCells().contains(new Pair<>(row, col))) {
             CellValue cellValue = cell.getValue();
             int rawCellValue = cell.getValue().getValue();
@@ -384,8 +604,6 @@ public class MinesweeperController {
 
         this.minesLabel.setText("Mines: " + Math.max(0, minefieldBoard.getNumMines() - minefieldBoard.getFlaggedCells().size()));
     }
-
-    // Other methods for game logic...
 }
 
 

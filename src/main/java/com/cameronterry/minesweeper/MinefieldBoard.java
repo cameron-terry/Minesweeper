@@ -183,6 +183,19 @@ class MinefieldBoard {
         this.visited.clear();
     }
 
+    int getHighestNeighbor() {
+        int highestNeighbor = 0;
+
+        for (int r = 0; r < this.rows; r++) {
+            for (int c = 0; c < this.cols; c++) {
+                int rawCellValue = this.board[r][c].getValue().getValue();
+                highestNeighbor = Math.max(highestNeighbor, rawCellValue);
+            }
+        }
+
+        return highestNeighbor;
+    }
+
     void flagCell(int row, int col) {
         if (this.board[row][col].getState() == CellState.COVERED) {
             this.board[row][col].setState(CellState.FLAGGED);
@@ -337,9 +350,13 @@ class MinefieldBoard {
 
     HashSet<Pair<Integer, Integer>> getLegalCells() {
         HashSet<Pair<Integer, Integer>> legalCells = new HashSet<>();
-        for (Pair<Integer, Integer> cell : this.coveredCells) {
-            if (!this.mineCache.contains(cell)) {
-                legalCells.add(cell);
+
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                // if cell is not covered and not a mine
+                if (!(this.board[r][c].getState() == CellState.UNCOVERED || this.mines[r][c])) {
+                    legalCells.add(new Pair<>(r, c));
+                }
             }
         }
         return legalCells;
