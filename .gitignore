@@ -36,3 +36,10 @@ build/
 
 ### Mac OS ###
 .DS_Store
+/src/main/resources/images/minesweeperJava4star15x15.png
+/src/main/resources/images/minesweeperJava15x15x40.png
+/src/main/resources/images/minesweeperJava15x15x40_2.png
+/src/main/resources/images/star.png
+/finished_games.json
+/unfinished_games.json
+/neighbor_distribution.csv

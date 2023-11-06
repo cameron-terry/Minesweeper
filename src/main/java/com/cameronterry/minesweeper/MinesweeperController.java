@@ -297,8 +297,20 @@ public class MinesweeperController {
                 } else if (rawCellValue == -1) {
                     // make the button red
                     cellButton.setStyle("-fx-background-color: red; -fx-font-size: 20px;");
+                    cellButton.setText("^");
                 } else {
-                    cellButton.setStyle("-fx-backgound-color: black; -fx-font-size: 20px;");
+                    cellButton.setStyle("-fx-background-color: darkgray; -fx-font-size: 20px;");
+                    cellButton.setText("-");
+                }
+
+                if (rawCellValue == record.getHighestNumber()) {
+                    Color textColor = numberColorMapping.getOrDefault(rawCellValue, Color.BLACK);
+                    String colorStyle = String.format("-fx-text-fill: #%02X%02X%02X; -fx-font-size: 20px; -fx-border-color: gold; -fx-border-width: 2px;",
+                            (int) (textColor.getRed() * 255),
+                            (int) (textColor.getGreen() * 255),
+                            (int) (textColor.getBlue() * 255));
+
+                    cellButton.setStyle(colorStyle);
                 }
             }
         }
@@ -385,7 +397,8 @@ public class MinesweeperController {
                     setText(null);
                     setGraphic(null);
                 } else {
-                    Circle colorCircle = new Circle(5, numberColorMapping.getOrDefault(item.getHighestNumber(), Color.BLACK));
+                    int neighborMax = item.getHighestNumber();
+                    Circle colorCircle = new Circle(neighborMax, numberColorMapping.getOrDefault(neighborMax, Color.BLACK));
                     String gameInfo = String.format("(%d, %d) → %d | %s",
                             item.getRows(), item.getCols(), item.getNumMines(),
                             formatSecondsAsMMSS(item.getFinalTime()));
@@ -426,8 +439,11 @@ public class MinesweeperController {
             }
         });
 
+        // Make sure TableView takes up all available space
+        tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
         // Create the scene and show the stage
-        Scene scene = new Scene(new ScrollPane(tableView), 400, 400); // You might want to adjust the size
+        Scene scene = new Scene(new BorderPane(tableView), 400, 300); // You might want to adjust the size
         recentGamesStage.setScene(scene);
         recentGamesStage.show();
     }
