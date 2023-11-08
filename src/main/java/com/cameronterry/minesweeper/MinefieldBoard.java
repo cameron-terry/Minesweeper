@@ -43,7 +43,7 @@ enum CellValue {
 /**
  * Cell: Class representing a cell in the minefield.
  * <p>
- * A cell has a state and a value.
+ * A cell has a state CellState and a value CellValue.
  */
 class Cell {
     public Cell(CellState state, CellValue value) {
@@ -88,13 +88,15 @@ class MinefieldBoard {
         this.numMines = numMines;
         this.board = new Cell[rows][cols];
         this.mines = new boolean[rows][cols];
+
+        // caching data structures
         this.uncoveredCells = new HashSet<>();
         this.coveredCells = new HashSet<>();
         this.flaggedCells = new HashSet<>();
         this.mineCache = new HashSet<>();
 
         this.mineFlags = new HashSet<>();
-        this.visited = new HashSet<>();
+        this.visited = new HashSet<>(); // for dfs
 
         // setup board
         this.initializeBoardCells();
@@ -302,6 +304,39 @@ class MinefieldBoard {
         return board_str.toString();
     }
 
+    String getBoardStateStr(HashMap<Pair<Integer, Integer>, String> markSquares) {
+        StringBuilder board_str = new StringBuilder("Minefield(grid_size=(" + this.rows + ", " + this.cols + "), mines=" + this.numMines + ")\n");
+
+        for (int r = 0; r < this.rows; r++) {
+            StringBuilder row = new StringBuilder();
+            for (int c = 0; c < this.cols; c++) {
+                if (markSquares.containsKey(new Pair<>(r, c))) {
+                    row.append(markSquares.get(new Pair<>(r, c)));
+                    row.append(" ");
+                    continue;
+                }
+                Cell cell = this.board[r][c];
+
+                if (cell.getState() == CellState.UNCOVERED) {
+                    if (cell.getValue() == CellValue.MINE) {
+                        row.append("X ");
+                    } else {
+                        row.append(cell.getValue().getValue());
+                        row.append(" ");
+                    }
+
+                } else if (cell.getState() == CellState.FLAGGED) {
+                    row.append("✓ ");
+                } else {
+                    row.append("- ");
+                }
+
+            }
+            board_str.append(row).append("\n");
+        }
+
+        return board_str.toString();
+    }
     String getOracleStateStr() {
         HashMap<String, String> asciiMapping = new HashMap<>();
         asciiMapping.put("-1", "X");
@@ -388,6 +423,16 @@ class MinefieldBoard {
         return board;
     }
 
+    public int[][] getRawBoard() {
+        int[][] rawBoard = new int[this.rows][this.cols];
+        for (int r = 0; r < this.rows; r++) {
+            for (int c = 0; c <this.cols; c++) {
+                rawBoard[r][c] = this.board[r][c].getValue().getValue();
+            }
+        }
+        return rawBoard;
+    }
+
     public void setBoard(Cell[][] board) {
         this.board = board;
     }
@@ -437,5 +482,6 @@ class MinefieldBoard {
     public HashSet<Pair<Integer, Integer>> getMineCache() {
         return mineCache;
     }
+
 
 }

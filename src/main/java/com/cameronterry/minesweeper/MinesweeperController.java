@@ -13,11 +13,11 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Polygon;
 import javafx.scene.text.Text;
-import javafx.scene.text.TextFlow;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Pair;
@@ -64,6 +64,8 @@ public class MinesweeperController {
     private Timeline timeline;
 
     private MinefieldBoard minefieldBoard;
+
+    private boolean showProbabilities = false;
 
     private final HashMap<String, String> asciiMapping = new HashMap<>();
 
@@ -239,10 +241,27 @@ public class MinesweeperController {
 
             this.stopTimer();
             this.setStatusLabel("/images/minesweeper_default.png");
+            showProbabilities = false;
 
             popupStage.showAndWait();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void onStatusLabelUpdate(MouseEvent event) {
+        if (!showProbabilities) {
+            this.setStatusLabel("/images/minesweeper_secret.png");
+        } else {
+            this.setStatusLabel("/images/minesweeper_default.png");
+        }
+        showProbabilities = !showProbabilities;
+
+        for (int r = 0; r < minefieldBoard.getRows(); r++) {
+            for (int c = 0; c < minefieldBoard.getCols(); c++) {
+                this.updateCell(r, c);
+            }
         }
     }
 
@@ -359,6 +378,7 @@ public class MinesweeperController {
         leftStarsBox.getChildren().clear();
         rightStarsBox.getChildren().clear();
         setStatusLabel("/images/minesweeper_default.png");
+        showProbabilities = false;
 
         minefieldBoard = new MinefieldBoard(boardRows, boardCols, boardMines);
         minefieldBoard.updateCellCoverageCache();
@@ -593,7 +613,8 @@ public class MinesweeperController {
             int rawCellValue = cell.getValue().getValue();
 
             if (cellValue == CellValue.EMPTY) {
-                ImageView emptyImageView = getImage("/images/empty.png", (int) cellButton.getWidth(), (int) cellButton.getHeight());
+                ImageView emptyImageView = getImage("/images/empty_alt_border.png", (int) cellButton.getWidth(), (int) cellButton.getHeight());
+                cellButton.setText("");
                 cellButton.setGraphic(emptyImageView);
                 cellButton.setPadding(Insets.EMPTY);
                 cellButton.setStyle("-fx-background-color: transparent;");
@@ -610,15 +631,36 @@ public class MinesweeperController {
                 cellButton.setDisable(true);
             }
         } else if (minefieldBoard.getCoveredCells().contains(new Pair<>(row, col))) {
-            cellButton.setText("");
+
+            if (showProbabilities) {
+                MinefieldSolver minefieldSolver = new MinefieldSolver(minefieldBoard);
+                minefieldSolver.getProbabilities(minefieldBoard);
+                float cellProbability = minefieldSolver.getBoardProbabilities()[row][col];
+
+                // Calculate the color based on the probability
+                // Green component goes down as the probability increases
+                // Red component goes up as the probability increases
+                int red = (int) (255 * cellProbability);
+                int green = 255 - red;
+                String colorStyle = String.format("-fx-text-fill: rgb(%d,%d,0); -fx-font-size: 12px; -fx-font-weight:bolder;",
+                        red, green);
+
+                cellButton.setText(String.format("%.2f", cellProbability));
+                cellButton.setStyle(colorStyle);
+            } else {
+                cellButton.setText("");
+                cellButton.setStyle("-fx-text-fill: black; -fx-font-size: 20px;");
+            }
+
             cellButton.setDisable(false);
             cellButton.setGraphic(null);
-            // set the cellButton back to normal
-            cellButton.setStyle("-fx-text-fill: black; -fx-font-size: 20px;");
+
+
         } else if (minefieldBoard.getFlaggedCells().contains(new Pair<>(row, col))) {
             ImageView flagImageView = getImage("/images/flag.png", (int) cellButton.getWidth(), (int) cellButton.getHeight());
             cellButton.setGraphic(flagImageView);
             cellButton.setPadding(Insets.EMPTY);
+            cellButton.setText("");
             cellButton.setStyle("-fx-background-color: transparent;");
 
         }

@@ -36,7 +36,7 @@
         </HBox>
 
         <!-- Status label -->
-        <Label fx:id="statusLabel" text="Welcome to Minesweeper!" />
+        <Label fx:id="statusLabel" onMouseClicked="#onStatusLabelUpdate" />
 
         <!-- Box for stars on the right -->
         <HBox fx:id="rightStarsBox" spacing="5.0">

@@ -2,12 +2,13 @@
 <img src="./src/main/resources/images/minesweeper6star15x15.png" width="425"/> <img src="./src/main/resources/images/minesweeperPrevGame.png" width="425"/> 
 
 ## A simple Minesweeper game written in Java using JavaFX and Maven
+### Targeted for Java 21
 
-## How to run
+## Features
 * Left click to reveal a tile, right click to flag a tile.
 * Press "Start Game" to start a new game.
 * Use the dropdown menu (`Board`) to change the difficulty.
-* Use the "File" Menu to view previously completed games.
+* Use "File -> Recent" to view previously completed games.
 
 # Compile
 * `mvn clean javafx:jlink`

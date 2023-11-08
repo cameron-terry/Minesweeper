@@ -291,4 +291,59 @@ class MinefieldBoardTest {
         }
     }
 
+    @Test
+    void testCalculateProbabilities() {
+        MinefieldSolver minefieldSolver = new MinefieldSolver(board);
+        PriorityQueue probabilities = minefieldSolver.getProbabilities(board);
+
+        while (!probabilities.isEmpty() && !board.getLegalCells().isEmpty()) {
+            System.out.println(minefieldSolver.getProbabilitiesString(board));
+            ProbabilityTuple probabilityTuple = (ProbabilityTuple) probabilities.poll();
+            System.out.println("Best choice: " + probabilityTuple);
+
+            boolean gameOver = board.uncover(probabilityTuple.getR(), probabilityTuple.getC());
+            System.out.println(board.getBoardStateStr());
+            if (gameOver) {
+                System.out.println("We lost");
+                break;
+            }
+
+            probabilities = minefieldSolver.getProbabilities(board);
+        }
+
+        if (board.getLegalCells().isEmpty()) {
+            System.out.println("We won");
+            System.out.println(board.getBoardStateStr());
+        }
+    }
+
+    @Test
+    void testPerfectPlayBot() {
+        MinefieldSolver minefieldSolver = new MinefieldSolver(board);
+        PriorityQueue probabilities = minefieldSolver.getProbabilities(board);
+        int turns = 0;
+
+        // if there are multiple optimal moves, make the one with the most optimal neighbors
+        while (!probabilities.isEmpty() && !board.getLegalCells().isEmpty()) {
+            turns++;
+            ProbabilityTuple minProbabilityTuple = (ProbabilityTuple) probabilities.poll();
+            System.out.println("Best choice: " + minProbabilityTuple);
+
+            int r = minProbabilityTuple.getR();
+            int c = minProbabilityTuple.getC();
+            Pair rcpair = new Pair(r, c);
+            HashMap<Pair<Integer, Integer>, String> marker = new HashMap<>();
+            marker.put(rcpair, "+");
+
+            boolean gameOver = board.uncover(r, c);
+            System.out.println(board.getBoardStateStr(marker));
+            if (gameOver) {
+                System.out.println("We lost");
+                break;
+            }
+
+            probabilities = minefieldSolver.getProbabilities(board);
+        }
+        System.out.println("Turns: " + turns);
+    }
 }

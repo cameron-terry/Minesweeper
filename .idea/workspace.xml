@@ -5,10 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="908755b6-fc93-402a-8b52-913b711f330d" name="Changes" comment="Improve previous game UI">
-      <change afterPath="$PROJECT_DIR$/CMinesweeper-1.0.dmg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/minesweeperLogo.icns" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/cameronterry/minesweeper/MinefieldSolver.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/cameronterry/minesweeper/MinefieldBoard.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/cameronterry/minesweeper/MinefieldBoard.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/cameronterry/minesweeper/MinesweeperController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/cameronterry/minesweeper/MinesweeperController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/com/cameronterry/minesweeper/minesweeper-view.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/com/cameronterry/minesweeper/minesweeper-view.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/images/mine.png" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/images/mine.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/com/cameronterry/minesweeper/MinefieldBoardTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/com/cameronterry/minesweeper/MinefieldBoardTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -19,8 +23,8 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="FxmlFile" />
-        <option value="Class" />
         <option value="JUnit5 Test Class" />
+        <option value="Class" />
       </list>
     </option>
   </component>
@@ -228,7 +232,15 @@
       <option name="project" value="LOCAL" />
       <updated>1699298852325</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="Improve previous game UI">
+      <option name="closed" value="true" />
+      <created>1699299470479</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1699299470479</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
