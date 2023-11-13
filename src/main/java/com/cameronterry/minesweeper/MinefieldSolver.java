@@ -6,32 +6,11 @@ import java.util.HashSet;
 import java.util.PriorityQueue;
 
 
-class ProbabilityTuple implements Comparable<ProbabilityTuple> {
-    private float probability;
-    private int r;
-    private int c;
-
-    public ProbabilityTuple(float probability, int r, int c) {
-        this.probability = probability;
-        this.r = r;
-        this.c = c;
-    }
-
-    public float getProbability() {
-        return probability;
-    }
-
-    public int getR() {
-        return r;
-    }
-
-    public int getC() {
-        return c;
-    }
+record ProbabilityTuple(float probability, int r, int c) implements Comparable<ProbabilityTuple> {
 
     @Override
     public int compareTo(ProbabilityTuple other) {
-        // Assuming min-heap; for max-heap, reverse operands
+        // Config for min-heap; for max-heap, reverse operands
         return Float.compare(this.probability, other.probability);
     }
 
@@ -47,7 +26,7 @@ public class MinefieldSolver {
                                                {0, -1}, {0, 1},
                                                {1, -1}, {1, 0}, {1, 1}};
 
-    private float[][] boardProbabilities;
+    private final float[][] boardProbabilities;
     private MinefieldBoard minefieldBoard;
 
     public MinefieldSolver(MinefieldBoard board) {
@@ -96,7 +75,7 @@ public class MinefieldSolver {
 
             maxProb = Math.max(maxProb,
                     (remCovNeighbors == 0) ? (float) Double.POSITIVE_INFINITY :
-                            cellRawValue / remainingCoveredNeighbors(neighborR, neighborC));
+                            cellRawValue / remCovNeighbors);
         }
         return maxProb;
     }
@@ -104,7 +83,7 @@ public class MinefieldSolver {
     public PriorityQueue getProbabilities(MinefieldBoard minefieldBoard) {
         // iterate through each uncovered cell, and set the probability of covered cells based on these neighbors
         // the score is calculated by {cellValue} / {remainingNeighbors}
-        // covered has cell value infinity
+        // covered has score of 0
         /*
         e.g.
                 0 1 - -
@@ -117,8 +96,8 @@ public class MinefieldSolver {
 
                 and
                     (0, 1): 1 / 2 = 0.5
-                    (0, 2): infinity
-                    (0, 3): infinity
+                    (0, 2): undef
+                    (0, 3): undef
                     (1, 1): 1 / 2 = 0.5
                     (1, 3): 2 / 3 = 0.66
                     (2, 1): 1 / 1 = 1
@@ -132,31 +111,25 @@ public class MinefieldSolver {
         Cell[][] board = minefieldBoard.getBoard();
         int rows = minefieldBoard.getRows();
         int cols = minefieldBoard.getCols();
+        // find all mines identified (probability = 1)
+        HashSet<Pair<Integer, Integer>> minesIdentified = new HashSet<>();
+        int[][] tempBoard = minefieldBoard.getRawBoard();
 
         for (int r = 0; r < rows; r++) {
-            for (int c = 0; c <cols; c++) {
+            for (int c = 0; c < cols; c++) {
                 Cell cell = board[r][c];
                 if (cell.getState() == CellState.UNCOVERED) {
                     boardProbabilities[r][c] = 0;
                 } else {
-                    boardProbabilities[r][c] = calculateProbabilityV0(r, c);
-                    probabilities.add(new ProbabilityTuple(boardProbabilities[r][c], r, c));
+                    float cellProb = calculateProbabilityV0(r, c);
+                    if (cellProb == 1.0f) {
+                        minesIdentified.add(new Pair<>(r, c));
+                    }
+                    boardProbabilities[r][c] = cellProb;
+                    probabilities.add(new ProbabilityTuple(cellProb, r, c));
                 }
             }
         }
-
-        // find all mines identified (probability = 1)
-        HashSet<Pair<Integer, Integer>> minesIdentified = new HashSet<>();
-
-        for (int r = 0; r < rows; r++) {
-            for (int c = 0; c < cols; c++) {
-                if (boardProbabilities[r][c] == 1.0f) {
-                    minesIdentified.add(new Pair<>(r, c));
-                }
-            }
-        }
-
-        int[][] tempBoard = minefieldBoard.getRawBoard();
 
         // iterate through all mines identified, and update probabilities of neighboring cells
         for (Pair mine : minesIdentified) {
@@ -181,16 +154,16 @@ public class MinefieldSolver {
                         int neighborNeighborR = neighborR + neighborDirection[0];
                         int neighborNeighborC = neighborC + neighborDirection[1];
 
-                        // if neighbor is out of bounds or uncovered, skip
+                        // if neighbor is out of bounds, uncovered, or a mine, skip
                         if (minefieldBoard.outOfBounds(neighborNeighborR, neighborNeighborC)
                                 || board[neighborNeighborR][neighborNeighborC].getState() == CellState.UNCOVERED
                         || (neighborNeighborR == mineR && neighborNeighborC == mineC)) {
                             continue;
                         }
-
                         if (boardProbabilities[neighborNeighborR][neighborNeighborC] == 1.0f) {
                             continue;
                         }
+
                         boardProbabilities[neighborNeighborR][neighborNeighborC] = 0.0f;
                         probabilities.add(
                                 new ProbabilityTuple(boardProbabilities[neighborNeighborR][neighborNeighborC],

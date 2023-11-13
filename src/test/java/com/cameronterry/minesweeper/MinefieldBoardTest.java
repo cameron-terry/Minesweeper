@@ -6,8 +6,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.*;
 
 import javafx.util.Pair;
@@ -301,7 +299,7 @@ class MinefieldBoardTest {
             ProbabilityTuple probabilityTuple = (ProbabilityTuple) probabilities.poll();
             System.out.println("Best choice: " + probabilityTuple);
 
-            boolean gameOver = board.uncover(probabilityTuple.getR(), probabilityTuple.getC());
+            boolean gameOver = board.uncover(probabilityTuple.r(), probabilityTuple.c());
             System.out.println(board.getBoardStateStr());
             if (gameOver) {
                 System.out.println("We lost");
@@ -329,8 +327,8 @@ class MinefieldBoardTest {
             ProbabilityTuple minProbabilityTuple = (ProbabilityTuple) probabilities.poll();
             System.out.println("Best choice: " + minProbabilityTuple);
 
-            int r = minProbabilityTuple.getR();
-            int c = minProbabilityTuple.getC();
+            int r = minProbabilityTuple.r();
+            int c = minProbabilityTuple.c();
             Pair rcpair = new Pair(r, c);
             HashMap<Pair<Integer, Integer>, String> marker = new HashMap<>();
             marker.put(rcpair, "+");
