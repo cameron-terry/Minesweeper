@@ -1,5 +1,5 @@
 # Minesweeper
-<img src="./src/main/resources/images/minesweeper6star15x15.png" width="425"/> <img src="./src/main/resources/images/minesweeperPrevGame.png" width="425"/> 
+<img src="./src/main/resources/images/minesweeper6star15x15.png" width="600"/> <img src="./src/main/resources/images/minesweeperPrevGame.png" width="600"/> 
 
 ## A simple Minesweeper game written in Java using JavaFX and Maven
 ### Targeted for Java 21
